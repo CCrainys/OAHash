@@ -23,3 +23,10 @@ hash_table_table * hash_table_new() {
 
     return hash_table;
 }
+
+// define item deletion function
+static void hash_table_delete_item(hash_table_item * item) {
+    free(item->key);
+    free(item->value);
+    free(item);
+}
