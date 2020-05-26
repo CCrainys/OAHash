@@ -30,3 +30,19 @@ static void hash_table_delete_item(hash_table_item * item) {
     free(item->value);
     free(item);
 }
+
+// define table deletion function
+void hash_table_delete_table(hash_table_table * hash_table) {
+    // delete all items in the table
+    for (int item_index = 0; item_index < hash_table->size; item_index++) {
+        hash_table_item * item = hash_table->items[item_index];
+        // determine if we must delete the item
+        if (item != NULL) {
+            hash_table_delete_item(item);
+        }
+    }
+    // free up pointer to items
+    free(hash_table->items);
+
+    free(hash_table);
+}
