@@ -1,0 +1,4 @@
+#ifndef SRC_HASH_TABLE_H
+#define SRC_HASH_TABLE_H
+
+#endif //SRC_HASH_TABLE_H
