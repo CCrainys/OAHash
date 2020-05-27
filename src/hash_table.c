@@ -110,7 +110,7 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
         // determine if there is an item already at this index
         hash_table_item * item_at_index = hash_table->items[index];
         int attempt_number = 1;
-        // while we're not at an empty index keep generating a new index
+        // while we're not at an empty or deleted index keep generating a new index
         while ((item_at_index != NULL) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
             index = hash_table_dh_get_hash(item->key, hash_table->size, attempt_number);
             // determine if there is an item already at the index
@@ -134,8 +134,8 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
     int i = 1;
     // while we're not at an empty index, compare the key to the items key, then linearly search
     while (item_at_index != NULL) {
-        // check the key of the item against the key searching for
-        if (strcmp(item_at_index->key, key) == 0) {
+        // check the key of the item against the key searching for and we're not at a deleted item
+        if ((strcmp(item_at_index->key, key) == 0) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
             // found an item with a matching key - get the value
             return item_at_index->value;
         }
