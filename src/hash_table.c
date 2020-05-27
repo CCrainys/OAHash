@@ -112,10 +112,19 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
         int attempt_number = 1;
         // while we're not at an empty or deleted index keep generating a new index
         while ((item_at_index != NULL) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
-            index = hash_table_dh_get_hash(item->key, hash_table->size, attempt_number);
-            // determine if there is an item already at the index
-            item_at_index = hash_table->items[index];
-            attempt_number++;
+            // check if current item's key is equal to our key
+            if (strcmp(item_at_index->key, key) == 0) {
+                // delete the item with our key
+                hash_table_delete_item(item_at_index);
+                // place our updated value for this key at the same index
+                hash_table->items[index] = item;
+                return;
+            } else {
+                index = hash_table_dh_get_hash(item->key, hash_table->size, attempt_number);
+                // determine if there is an item already at the index
+                item_at_index = hash_table->items[index];
+                attempt_number++;
+            }
         }
         // store the item in the free index
         hash_table->items[index] = item;
