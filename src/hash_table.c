@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "hash_table.h"
 
@@ -15,11 +16,15 @@ static hash_table_item * hash_table_new_item(const char * k, const char * v) {
 
 // define table initialisation function
 hash_table_table * hash_table_new() {
-    hash_table_table * hash_table = malloc(sizeof(hash_table_table)); // TODO: check malloc response
+    hash_table_table * hash_table = malloc(sizeof(hash_table_table));
 
-    hash_table->count = 0;
-    hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *)); // TODO: check calloc response
-    hash_table->size = 50; // TODO: add resize ability in future
+    if (hash_table != NULL) {
+        hash_table->count = 0;
+        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *)); // TODO: check calloc response
+        hash_table->size = 50; // TODO: add resize ability in future
+    } else {
+        printf("%s \n", "Malloc failed");
+    }
 
     return hash_table;
 }
