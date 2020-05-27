@@ -6,10 +6,15 @@
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
-    hash_table_item * item = malloc(sizeof(hash_table_item)); // TODO: check malloc response
+    hash_table_item * item = malloc(sizeof(hash_table_item));
 
-    item->key = strdup(k); // duplicate key
-    item->value = strdup(v); // duplicate value
+    // check result of the call to malloc
+    if (item != NULL) {
+        item->key = strdup(k); // duplicate key
+        item->value = strdup(v); // duplicate value
+    } else {
+        printf("%s \n", "Malloc failed when creating hash table item");
+    }
 
     return item;
 }
