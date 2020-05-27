@@ -25,5 +25,6 @@ static int hash_table_hash(const char * key, const int prime, const int hash_tab
 static int hash_table_dh_get_hash(const char * s, const int hash_table_size, const int attempt_number);
 
 void hash_table_insert(hash_table_table * hash_table, const char * key, const char * value);
+char * hash_table_search(hash_table_table * hash_table, const char * key);
 
 #endif //SRC_HASH_TABLE_H

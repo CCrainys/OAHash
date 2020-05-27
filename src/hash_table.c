@@ -103,9 +103,9 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
     // create pointer to a new item
     hash_table_item * item = hash_table_new_item(key, value);
     if (item != NULL) {
-        // get the hash for the new item
+        // get the index for the new item
         int index = hash_table_dh_get_hash(item->key, hash_table->size, 0);
-        // determine if there is an item already at this hash
+        // determine if there is an item already at this index
         hash_table_item * item_at_index = hash_table->items[index];
         int attempt_number = 1;
         // while we're not at an empty index keep generating a new index
@@ -122,3 +122,29 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
         printf("%s \n", "Item could not be inserted as there was not enough memory to store it");
     }
 }
+
+// define table search function
+char * hash_table_search(hash_table_table * hash_table, const char * key) {
+    // get the index for the key
+    int index = hash_table_dh_get_hash(key, hash_table->size, 0);
+    // determine if there is an item already at this index
+    hash_table_item * item_at_index = hash_table->items[index];
+    int i = 1;
+    // while we're not at an empty index, compare the key to the items key, then linearly search
+    while (item_at_index != NULL) {
+        // check the key of the item against the key searching for
+        if (strcmp(item_at_index->key, key) == 0) {
+            // found an item with a matching key - get the value
+            return item_at_index->value;
+        }
+        // get next index using current attempt count
+        index = hash_table_dh_get_hash(key, hash_table->size, i);
+        // get the item at this index if exists
+        item_at_index = hash_table->items[index];
+        // increment the attempt number
+        i++;
+    }
+    // key not present in the hash table
+    return NULL;
+}
+
