@@ -5,6 +5,9 @@
 
 #include "hash_table.h"
 
+int PRIME_1 = 0; // TODO: define
+int PRIME_2 = 0; // TODO: define
+
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
     hash_table_item * item = malloc(sizeof(hash_table_item));
@@ -83,4 +86,13 @@ static int hash_table_hash(const char * key, const int prime, const int hash_tab
         hash_value = hash_value % hash_table_size;
     }
     return (int) hash_value;
+}
+
+// define double hashing function
+static int hash_table_dh_get_hash(const char * s, const int hash_table_size, const int attempt_number) {
+    const int hash_a = hash_table_hash(s, PRIME_1, hash_table_size);
+    const int hash_b = hash_table_hash(s, PRIME_2, hash_table_size);
+
+    // mitigate risk of hashing to same bucket by adding 1 to hash_b
+    return (hash_a + (attempt_number * (hash_b + 1))) % hash_table_size;
 }
