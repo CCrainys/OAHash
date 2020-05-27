@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "hash_table.h"
 
@@ -71,4 +72,15 @@ void hash_table_delete_table(hash_table_table * hash_table) {
 
         free(hash_table);
     }
+}
+
+// define hashing function
+static int hash_table_hash(const char * key, const int prime, const int hash_table_size) {
+    long hash_value = 0;
+    const int key_length = strlen(key);
+    for (int i = 0; i < key_length; i++) {
+        hash_value += (long) pow(prime, key_length - (i + 1)) * key[i];
+        hash_value = hash_value % hash_table_size;
+    }
+    return (int) hash_value;
 }
