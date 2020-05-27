@@ -26,8 +26,16 @@ hash_table_table * hash_table_new() {
     // check result of the call to malloc
     if (hash_table != NULL) {
         hash_table->count = 0;
-        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *)); // TODO: check calloc response
-        hash_table->size = 50; // TODO: add resize ability in future
+        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *));
+
+        // check result of the items call to calloc
+        if (hash_table->items != NULL) {
+            hash_table->size = 50; // TODO: add resize ability in future
+        } else {
+            printf("%s \n", "Calloc failed when creating hash table items - hash table size set to 0");
+            hash_table->size = 0;
+        }
+
     } else {
         printf("%s \n", "Malloc failed when creating hash table");
     }
