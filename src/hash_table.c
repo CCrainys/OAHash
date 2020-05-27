@@ -97,3 +97,28 @@ static int hash_table_dh_get_hash(const char * s, const int hash_table_size, con
     // mitigate risk of hashing to same bucket by adding 1 to hash_b
     return (hash_a + (attempt_number * (hash_b + 1))) % hash_table_size;
 }
+
+// define table insert function
+void hash_table_insert(hash_table_table * hash_table, const char * key, const char * value) {
+    // create pointer to a new item
+    hash_table_item * item = hash_table_new_item(key, value);
+    if (item != NULL) {
+        // get the hash for the new item
+        int index = hash_table_dh_get_hash(item->key, hash_table->size, 0);
+        // determine if there is an item already at this hash
+        hash_table_item * item_at_index = hash_table->items[index];
+        int attempt_number = 1;
+        // while we're not at an empty index keep generating a new index
+        while (item_at_index != NULL) {
+            index = hash_table_dh_get_hash(item->key, hash_table->size, attempt_number);
+            // determine if there is an item already at the index
+            item_at_index = hash_table->items[index];
+            attempt_number++;
+        }
+        // store the item in the free index
+        hash_table->items[index] = item;
+        hash_table->count++;
+    } else {
+        printf("%s \n", "Item could not be inserted as there was not enough memory to store it");
+    }
+}
