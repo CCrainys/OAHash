@@ -8,6 +8,8 @@
 // choose primes larger than our alphabet size - ie >128
 int PRIME_1 = 131;
 int PRIME_2 = 137;
+// define a deleted item to help prevent breaks in the collision chain
+static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
@@ -147,4 +149,36 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
     // key not present in the hash table
     return NULL;
 }
+
+// define table deletion function for given key
+void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
+    // get the index for the key
+    int index = hash_table_dh_get_hash(key, hash_table->size, 0);
+    // determine if there is an item already at this index
+    hash_table_item * item_at_index = hash_table->items[index];
+    int i = 1;
+    // while we're not at an empty index, compare the key to the items key, then linearly search
+    while (item_at_index != NULL) {
+        // ensure we're not at a deleted item
+        if (item_at_index != &HASH_TABLE_DELETED_ITEM) {
+            // check the key of the item against the key searching for
+            if (strcmp(item_at_index->key, key) == 0) {
+                // delete the item
+                hash_table_delete_item(item_at_index);
+                // change item index to point to the deleted item
+                // do not wish to break the collision chain so need to know item has been deleted
+                hash_table->items[index] = &HASH_TABLE_DELETED_ITEM;
+            }
+        }
+        // get next index using current attempt count
+        index = hash_table_dh_get_hash(key, hash_table->size, i);
+        // get the item at this index if exists
+        item_at_index = hash_table->items[index];
+        // increment the attempt number
+        i++;
+    }
+    // decrement the count now item deleted
+    hash_table->count--;
+}
+
 
