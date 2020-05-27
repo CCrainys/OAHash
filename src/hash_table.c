@@ -5,8 +5,9 @@
 
 #include "hash_table.h"
 
-int PRIME_1 = 0; // TODO: define
-int PRIME_2 = 0; // TODO: define
+// choose primes larger than our alphabet size - ie >128
+int PRIME_1 = 131;
+int PRIME_2 = 137;
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
