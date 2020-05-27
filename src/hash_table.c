@@ -111,7 +111,7 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
         hash_table_item * item_at_index = hash_table->items[index];
         int attempt_number = 1;
         // while we're not at an empty index keep generating a new index
-        while (item_at_index != NULL) {
+        while ((item_at_index != NULL) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
             index = hash_table_dh_get_hash(item->key, hash_table->size, attempt_number);
             // determine if there is an item already at the index
             item_at_index = hash_table->items[index];
