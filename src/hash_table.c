@@ -250,3 +250,16 @@ static void hash_table_resize(hash_table_table * hash_table, const int base_size
 
     hash_table_delete_table(new_hash_table);
 }
+
+// define table resize upwards (growth) function
+static void hash_table_resize_grow(hash_table_table * hash_table) {
+    const int new_size = hash_table->base_size * 2;
+    hash_table_resize(hash_table, new_size);
+}
+
+// define table resize downwards (shrink) function
+static void hash_table_resize_shrink(hash_table_table * hash_table) {
+    const int new_size = hash_table->base_size / 2;
+    hash_table_resize(hash_table, new_size);
+}
+
