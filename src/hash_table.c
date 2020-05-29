@@ -71,7 +71,7 @@ void hash_table_delete_table(hash_table_table * hash_table) {
             for (int item_index = 0; item_index < hash_table->size; item_index++) {
                 hash_table_item * item = hash_table->items[item_index];
                 // determine if we must delete the item
-                if (item != NULL) {
+                if ((item != NULL) && (item != &HASH_TABLE_DELETED_ITEM)) {
                     hash_table_delete_item(item);
                 }
             }
