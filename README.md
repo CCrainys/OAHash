@@ -26,6 +26,21 @@ A hash table implemented in C utilising open addressing and double hashing.
 
 A very low initial base size for the hash table was chosen in [hash_table.c](/src/hash_table.c) so the resizing function effects could be seen when running this example program. This obviously should be a much greater value in practice (than 2), say 50 - although this is obviously application dependent.
 
+### Output
+```sh
+Inserting "Key1" and "Value1" into table.
+Inserting "Key2" and "Value2" into table.
+Inserting "Key3" and "Value3" into table.
+Inserting "Key4" and "Value4" into table.
+Value for 'Key1': Value1
+Value for 'Key1' after deletion: (null)
+Value for 'FAKE KEY': (null)
+Size: 3
+Maximum Capacity: 5
+
+Process finished with exit code 0
+```
+
 ## Implementation Details
 
 Key-Value pairs are stored in a `struct`, our hash table then stores an array of pointers to items along with additional fields such as base size, capacity, and the number of items currently stored.
