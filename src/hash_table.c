@@ -4,12 +4,15 @@
 #include <math.h>
 
 #include "hash_table.h"
+#include "prime.h"
 
 // choose primes larger than our alphabet size - ie >128
 int PRIME_1 = 131;
 int PRIME_2 = 137;
 // define a deleted item to help prevent breaks in the collision chain
 static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
+// define table initial base size
+int HASH_TABLE_INITIAL_BASE_SIZE = 2; // set to larger value for normal use
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
@@ -33,11 +36,12 @@ hash_table_table * hash_table_new() {
     // check result of the call to malloc
     if (hash_table != NULL) {
         hash_table->count = 0;
-        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *));
+        hash_table->base_size = HASH_TABLE_INITIAL_BASE_SIZE;
+        hash_table->items = calloc((size_t) hash_table->base_size, sizeof(hash_table_item *));
 
         // check result of the items call to calloc
         if (hash_table->items != NULL) {
-            hash_table->size = 50; // TODO: add resize ability in future
+            hash_table->size = hash_table->base_size; // TODO: add resize ability in future
         } else {
             printf("%s \n", "Calloc failed when creating hash table items - hash table size set to 0");
             hash_table->size = 0;
@@ -105,6 +109,12 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
     // create pointer to a new item
     hash_table_item * item = hash_table_new_item(key, value);
     if (item != NULL) {
+        // check load of the hash table and determine if we should resize upwards
+        const int hash_table_load = hash_table->count * 100 / hash_table->size;
+        if (hash_table_load > 70) {
+            hash_table_resize_grow(hash_table);
+        }
+
         // get the index for the new item
         int index = hash_table_dh_get_hash(item->key, hash_table->size, 0);
         // determine if there is an item already at this index
@@ -161,6 +171,12 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
 
 // define table deletion function for given key
 void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
+    // check load of the hash table and determine if we should resize downwards (shrink)
+    const int hash_table_load = hash_table->count * 100 / hash_table->size;
+    if (hash_table_load < 10) {
+        hash_table_resize_shrink(hash_table);
+    }
+
     // get the index for the key
     int index = hash_table_dh_get_hash(key, hash_table->size, 0);
     // determine if there is an item already at this index
@@ -190,4 +206,72 @@ void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
     hash_table->count--;
 }
 
+// define table initialisation of given size function
+static hash_table_table * hash_table_new_given_size(const int base_size) {
+    hash_table_table * hash_table = malloc(sizeof(hash_table));
+
+    // check result of the call to malloc
+    if (hash_table != NULL) {
+        hash_table->base_size = base_size;
+        hash_table->size = get_next_prime(hash_table->base_size);
+
+        hash_table->count = 0;
+        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *));
+
+        // check result of the items call to calloc
+        if (hash_table->items == NULL) {
+            printf("%s \n", "Calloc failed when creating hash table items - hash table size set to 0");
+            hash_table->size = 0;
+        }
+
+    } else {
+        printf("%s \n", "Malloc failed when creating hash table");
+    }
+
+    return hash_table;
+}
+
+// define table resize function
+static void hash_table_resize(hash_table_table * hash_table, const int base_size) {
+    if (base_size < HASH_TABLE_INITIAL_BASE_SIZE) {
+        return;
+    }
+    // create a new hash table and copy across items
+    hash_table_table * new_hash_table = hash_table_new_given_size(base_size);
+    for (int index = 0; index < hash_table->size; index++) {
+        hash_table_item * current_item = hash_table->items[index];
+        if ((current_item != NULL) && (current_item != &HASH_TABLE_DELETED_ITEM)) {
+            hash_table_insert(new_hash_table, current_item->key, current_item->value);
+        }
+    }
+
+    // replace original hash table contents with those of the new one
+
+    // copy across new hash table attributes
+    hash_table->count = new_hash_table->count;
+    hash_table->base_size = new_hash_table->base_size;
+
+    // delete the new hash table after copying remaining attributes
+    const int current_hash_table_size = hash_table->size;
+    hash_table->size = new_hash_table->size;
+    new_hash_table->size = current_hash_table_size;
+
+    hash_table_item ** current_hash_table_items = hash_table->items;
+    hash_table->items = new_hash_table->items;
+    new_hash_table->items = current_hash_table_items;
+
+    hash_table_delete_table(new_hash_table);
+}
+
+// define table resize upwards (growth) function
+static void hash_table_resize_grow(hash_table_table * hash_table) {
+    const int new_size = hash_table->base_size * 2;
+    hash_table_resize(hash_table, new_size);
+}
+
+// define table resize downwards (shrink) function
+static void hash_table_resize_shrink(hash_table_table * hash_table) {
+    const int new_size = hash_table->base_size / 2;
+    hash_table_resize(hash_table, new_size);
+}
 
