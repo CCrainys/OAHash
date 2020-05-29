@@ -218,3 +218,35 @@ static hash_table_table * hash_table_new_given_size(const int base_size) {
 
     return hash_table;
 }
+
+// define table resize function
+static void hash_table_resize(hash_table_table * hash_table, const int base_size) {
+    if (base_size < HASH_TABLE_INITIAL_BASE_SIZE) {
+        return;
+    }
+    // create a new hash table and copy across items
+    hash_table_table * new_hash_table = hash_table_new_given_size(base_size);
+    for (int index = 0; index < hash_table->size; index++) {
+        hash_table_item * current_item = hash_table->items[index];
+        if ((current_item != NULL) && (current_item != &HASH_TABLE_DELETED_ITEM)) {
+            hash_table_insert(new_hash_table, current_item->key, current_item->value);
+        }
+    }
+
+    // replace original hash table contents with those of the new one
+
+    // copy across new hash table attributes
+    hash_table->count = new_hash_table->count;
+    hash_table->base_size = new_hash_table->base_size;
+
+    // delete the new hash table after copying remaining attributes
+    const int current_hash_table_size = hash_table->size;
+    hash_table->size = new_hash_table->size;
+    new_hash_table->size = current_hash_table_size;
+
+    hash_table_item ** current_hash_table_items = hash_table->items;
+    hash_table->items = new_hash_table->items;
+    new_hash_table->items = current_hash_table_items;
+
+    hash_table_delete_table(new_hash_table);
+}
