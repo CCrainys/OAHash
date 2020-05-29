@@ -171,6 +171,12 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
 
 // define table deletion function for given key
 void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
+    // check load of the hash table and determine if we should resize downwards (shrink)
+    const int hash_table_load = hash_table->count * 100 / hash_table->size;
+    if (hash_table_load < 10) {
+        hash_table_resize_shrink(hash_table);
+    }
+
     // get the index for the key
     int index = hash_table_dh_get_hash(key, hash_table->size, 0);
     // determine if there is an item already at this index
