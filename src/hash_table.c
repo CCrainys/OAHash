@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "hash_table.h"
+#include "prime.h"
 
 // choose primes larger than our alphabet size - ie >128
 int PRIME_1 = 131;
