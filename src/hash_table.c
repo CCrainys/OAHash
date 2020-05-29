@@ -69,7 +69,7 @@ void hash_table_delete_table(hash_table_table * hash_table) {
         if (hash_table->count != 0) {
             // delete all items in the table
             for (int item_index = 0; item_index < hash_table->size; item_index++) {
-                hash_table_item *item = hash_table->items[item_index];
+                hash_table_item * item = hash_table->items[item_index];
                 // determine if we must delete the item
                 if (item != NULL) {
                     hash_table_delete_item(item);
@@ -170,7 +170,7 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
 }
 
 // define table deletion function for given key
-void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
+void hash_table_delete_key(hash_table_table * hash_table, const char * key) {
     // check load of the hash table and determine if we should resize downwards (shrink)
     const int hash_table_load = hash_table->count * 100 / hash_table->size;
     if (hash_table_load < 10) {
