@@ -154,7 +154,7 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
     // while we're not at an empty index, compare the key to the items key, then linearly search
     while (item_at_index != NULL) {
         // check the key of the item against the key searching for and we're not at a deleted item
-        if ((strcmp(item_at_index->key, key) == 0) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
+        if ((item_at_index != &HASH_TABLE_DELETED_ITEM) && (strcmp(item_at_index->key, key) == 0)) {
             // found an item with a matching key - get the value
             return item_at_index->value;
         }
