@@ -20,8 +20,21 @@ static hash_table_item * hash_table_new_item(const char * k, const char * v) {
 
     // check result of the call to malloc
     if (item != NULL) {
-        item->key = strdup(k); // duplicate key
-        item->value = strdup(v); // duplicate value
+        // reserve memory
+        char * key_copy = malloc(sizeof(char) * (strlen(k) + 1));
+        char * value_copy = malloc(sizeof(char) * (strlen(v) + 1));
+
+        //item->key = strdup(k); // duplicate key
+        //item->value = strdup(v); // duplicate value
+        if ((key_copy == NULL) || (value_copy == NULL)) {
+            printf("%s \n", "Duplication of key-value strings failed when creating hash table item");
+        }
+        strcpy(key_copy, k);
+        strcpy(value_copy, v);
+
+        item->key = key_copy;
+        item->value = value_copy;
+
     } else {
         printf("%s \n", "Malloc failed when creating hash table item");
     }
@@ -69,9 +82,9 @@ void hash_table_delete_table(hash_table_table * hash_table) {
         if (hash_table->count != 0) {
             // delete all items in the table
             for (int item_index = 0; item_index < hash_table->size; item_index++) {
-                hash_table_item *item = hash_table->items[item_index];
+                hash_table_item * item = hash_table->items[item_index];
                 // determine if we must delete the item
-                if (item != NULL) {
+                if ((item != NULL) && (item != &HASH_TABLE_DELETED_ITEM)) {
                     hash_table_delete_item(item);
                 }
             }
@@ -87,7 +100,7 @@ void hash_table_delete_table(hash_table_table * hash_table) {
 // define hashing function
 static int hash_table_hash(const char * key, const int prime, const int hash_table_size) {
     long hash_value = 0;
-    const int key_length = strlen(key);
+    const int key_length = (const int) strlen(key);
     for (int i = 0; i < key_length; i++) {
         hash_value += (long) pow(prime, key_length - (i + 1)) * key[i];
         hash_value = hash_value % hash_table_size;
@@ -154,7 +167,7 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
     // while we're not at an empty index, compare the key to the items key, then linearly search
     while (item_at_index != NULL) {
         // check the key of the item against the key searching for and we're not at a deleted item
-        if ((strcmp(item_at_index->key, key) == 0) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
+        if ((item_at_index != &HASH_TABLE_DELETED_ITEM) && (strcmp(item_at_index->key, key) == 0)) {
             // found an item with a matching key - get the value
             return item_at_index->value;
         }
@@ -170,7 +183,7 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
 }
 
 // define table deletion function for given key
-void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
+void hash_table_delete_key(hash_table_table * hash_table, const char * key) {
     // check load of the hash table and determine if we should resize downwards (shrink)
     const int hash_table_load = hash_table->count * 100 / hash_table->size;
     if (hash_table_load < 10) {
