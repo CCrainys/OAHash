@@ -194,4 +194,27 @@ void hash_table_delete_key(hash_table_table * hash_table, const char* key) {
     hash_table->count--;
 }
 
+// define table initialisation of given size function
+static hash_table_table * hash_table_new_given_size(const int base_size) {
+    hash_table_table * hash_table = malloc(sizeof(hash_table));
 
+    // check result of the call to malloc
+    if (hash_table != NULL) {
+        hash_table->base_size = base_size;
+        hash_table->size = get_next_prime(hash_table->base_size);
+
+        hash_table->count = 0;
+        hash_table->items = calloc((size_t) hash_table->size, sizeof(hash_table_item *));
+
+        // check result of the items call to calloc
+        if (hash_table->items == NULL) {
+            printf("%s \n", "Calloc failed when creating hash table items - hash table size set to 0");
+            hash_table->size = 0;
+        }
+
+    } else {
+        printf("%s \n", "Malloc failed when creating hash table");
+    }
+
+    return hash_table;
+}
