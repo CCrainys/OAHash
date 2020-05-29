@@ -11,6 +11,8 @@ int PRIME_1 = 131;
 int PRIME_2 = 137;
 // define a deleted item to help prevent breaks in the collision chain
 static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
+// define table initial base size
+int HASH_TABLE_INITIAL_BASE_SIZE = 2; // set to larger value for normal use
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(const char * k, const char * v) {
