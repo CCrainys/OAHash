@@ -20,8 +20,21 @@ static hash_table_item * hash_table_new_item(const char * k, const char * v) {
 
     // check result of the call to malloc
     if (item != NULL) {
-        item->key = strdup(k); // duplicate key
-        item->value = strdup(v); // duplicate value
+        // reserve memory
+        char * key_copy = malloc(sizeof(char) * (strlen(k) + 1));
+        char * value_copy = malloc(sizeof(char) * (strlen(v) + 1));
+
+        //item->key = strdup(k); // duplicate key
+        //item->value = strdup(v); // duplicate value
+        if ((key_copy == NULL) || (value_copy == NULL)) {
+            printf("%s \n", "Duplication of key-value strings failed when creating hash table item");
+        }
+        strcpy(key_copy, k);
+        strcpy(value_copy, v);
+
+        item->key = key_copy;
+        item->value = value_copy;
+
     } else {
         printf("%s \n", "Malloc failed when creating hash table item");
     }
