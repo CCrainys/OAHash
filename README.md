@@ -7,7 +7,7 @@ A hash table implemented in C utilising open addressing and double hashing.
 ## List of Functions
 
 ### Creation
-`hash_table_new()` - returns `hash_table_table *` pointing to the created hash table
+`hash_table_new()` - returns `hash_table_table *` pointing to the created hash table  
 `hash_table_new_item(const char * k, const char * v)` - returns `hash_table_item *` pointing to the created item
 
 ### Insertion
@@ -17,7 +17,7 @@ A hash table implemented in C utilising open addressing and double hashing.
 `hash_table_search(hash_table_table * hash_table, const char * key)` - returns `char *` with the value at this key, `NULL` if key not found
 
 ### Deletion
-`hash_table_delete_key(hash_table_table * hash_table, const char * key)`
+`hash_table_delete_key(hash_table_table * hash_table, const char * key)`  
 `hash_table_delete_table(hash_table_table * hash_table)`
 
 ## Example Usage
