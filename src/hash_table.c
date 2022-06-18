@@ -7,34 +7,23 @@
 #include "prime.h"
 
 // choose primes larger than our alphabet size - ie >128
-int PRIME_1 = 131;
-int PRIME_2 = 137;
+int PRIME_1 = 137;
+int PRIME_2 = 136;
 // define a deleted item to help prevent breaks in the collision chain
-static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
+//static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
+const static uint64_t NIL = -1;
+static hash_table_item HASH_TABLE_DELETED_ITEM = { NIL-1, NIL-1 };
 // define table initial base size
 int HASH_TABLE_INITIAL_BASE_SIZE = 2; // set to larger value for normal use
 
 // define item initialisation function
-static hash_table_item * hash_table_new_item(const char * k, const char * v) {
+static hash_table_item * hash_table_new_item(uint64_t k, uint64_t v) {
     hash_table_item * item = malloc(sizeof(hash_table_item));
 
     // check result of the call to malloc
     if (item != NULL) {
-        // reserve memory
-        char * key_copy = malloc(sizeof(char) * (strlen(k) + 1));
-        char * value_copy = malloc(sizeof(char) * (strlen(v) + 1));
-
-        //item->key = strdup(k); // duplicate key
-        //item->value = strdup(v); // duplicate value
-        if ((key_copy == NULL) || (value_copy == NULL)) {
-            printf("%s \n", "Duplication of key-value strings failed when creating hash table item");
-        }
-        strcpy(key_copy, k);
-        strcpy(value_copy, v);
-
-        item->key = key_copy;
-        item->value = value_copy;
-
+        item->key = k;
+        item->value = v;
     } else {
         printf("%s \n", "Malloc failed when creating hash table item");
     }
@@ -98,27 +87,22 @@ void hash_table_delete_table(hash_table_table * hash_table) {
 }
 
 // define hashing function
-static int hash_table_hash(const char * key, const int prime, const int hash_table_size) {
-    long hash_value = 0;
-    const int key_length = (const int) strlen(key);
-    for (int i = 0; i < key_length; i++) {
-        hash_value += (long) pow(prime, key_length - (i + 1)) * key[i];
-        hash_value = hash_value % hash_table_size;
-    }
-    return (int) hash_value;
+static uint64_t hash_table_hash(uint64_t key, const int prime, const int hash_table_size) {
+    uint64_t hash_value = 1 + key % prime;
+    return hash_value;
 }
 
 // define double hashing function
-static int hash_table_dh_get_hash(const char * s, const int hash_table_size, const int attempt_number) {
-    const int hash_a = hash_table_hash(s, PRIME_1, hash_table_size);
-    const int hash_b = hash_table_hash(s, PRIME_2, hash_table_size);
+static uint64_t hash_table_dh_get_hash(uint64_t s, const int hash_table_size, const int attempt_number) {
+    const uint64_t hash_a = hash_table_hash(s, PRIME_1, hash_table_size);
+    const uint64_t hash_b = hash_table_hash(s, PRIME_2, hash_table_size);
 
     // mitigate risk of hashing to same bucket by adding 1 to hash_b
     return (hash_a + (attempt_number * (hash_b + 1))) % hash_table_size;
 }
 
 // define table insert function
-void hash_table_insert(hash_table_table * hash_table, const char * key, const char * value) {
+void hash_table_insert(hash_table_table * hash_table, uint64_t key, uint64_t value) {
     // create pointer to a new item
     hash_table_item * item = hash_table_new_item(key, value);
     if (item != NULL) {
@@ -158,9 +142,9 @@ void hash_table_insert(hash_table_table * hash_table, const char * key, const ch
 }
 
 // define table search function
-char * hash_table_search(hash_table_table * hash_table, const char * key) {
+uint64_t hash_table_search(hash_table_table * hash_table, uint64_t key) {
     // get the index for the key
-    int index = hash_table_dh_get_hash(key, hash_table->size, 0);
+    uint64_t index = hash_table_dh_get_hash(key, hash_table->size, 0);
     // determine if there is an item already at this index
     hash_table_item * item_at_index = hash_table->items[index];
     int i = 1;
@@ -179,11 +163,11 @@ char * hash_table_search(hash_table_table * hash_table, const char * key) {
         i++;
     }
     // key not present in the hash table
-    return NULL;
+    return NIL;
 }
 
 // define table deletion function for given key
-void hash_table_delete_key(hash_table_table * hash_table, const char * key) {
+void hash_table_delete_key(hash_table_table * hash_table, uint64_t key) {
     // check load of the hash table and determine if we should resize downwards (shrink)
     const int hash_table_load = hash_table->count * 100 / hash_table->size;
     if (hash_table_load < 10) {
