@@ -17,14 +17,14 @@ int main() {
     printf( "Inserting (4,6000) into table.\n" );
 
     uint64_t* lookup = hash_table_search(hash_table, 1);
-    printf( "Value for 'Key1': %llu\n", *lookup);
+    printf( "Value for 'Key1': %lu\n", *lookup);
     hash_table_delete_key(hash_table, 1);
 
     lookup = hash_table_search(hash_table, 1);
     printf( "Value for 'Key1' after deletion: %llu\n", *lookup);
 
     lookup = hash_table_search(hash_table, 6 );
-    printf( "Value for '6': %llu\n", *lookup );
+    printf( "Value for '6': %lu\n", *lookup );
 
     printf( "Size: %i\n", hash_table->count );
     printf( "Maximum Capacity: %i\n", hash_table->size );
