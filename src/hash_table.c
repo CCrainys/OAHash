@@ -10,11 +10,9 @@
 int PRIME_1 = 137;
 int PRIME_2 = 136;
 // define a deleted item to help prevent breaks in the collision chain
-//static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
-const static uint64_t NIL = -1;
-static hash_table_item HASH_TABLE_DELETED_ITEM = { NIL-1, NIL-1 };
+static hash_table_item HASH_TABLE_DELETED_ITEM = {NULL, NULL};
 // define table initial base size
-int HASH_TABLE_INITIAL_BASE_SIZE = 2; // set to larger value for normal use
+int HASH_TABLE_INITIAL_BASE_SIZE = 20; // set to larger value for normal use
 
 // define item initialisation function
 static hash_table_item * hash_table_new_item(uint64_t k, uint64_t v) {
@@ -22,8 +20,17 @@ static hash_table_item * hash_table_new_item(uint64_t k, uint64_t v) {
 
     // check result of the call to malloc
     if (item != NULL) {
-        item->key = k;
-        item->value = v;
+        uint64_t * key_copy = malloc(sizeof(uint64_t));
+        uint64_t * value_copy = malloc(sizeof(uint64_t));
+
+        if ((key_copy == NULL) || (value_copy == NULL)) {
+            printf("%s \n", "allocate memory k-v failed when creating hash table item");
+        }
+        *key_copy = k;
+        *value_copy = v;
+
+        item->key = key_copy;
+        item->value = value_copy;
     } else {
         printf("%s \n", "Malloc failed when creating hash table item");
     }
@@ -87,15 +94,15 @@ void hash_table_delete_table(hash_table_table * hash_table) {
 }
 
 // define hashing function
-static uint64_t hash_table_hash(uint64_t key, const int prime, const int hash_table_size) {
-    uint64_t hash_value = 1 + key % prime;
+static uint64_t hash_table_hash(uint64_t key, const int prime) {
+    uint64_t hash_value = key % prime;
     return hash_value;
 }
 
 // define double hashing function
-static uint64_t hash_table_dh_get_hash(uint64_t s, const int hash_table_size, const int attempt_number) {
-    const uint64_t hash_a = hash_table_hash(s, PRIME_1, hash_table_size);
-    const uint64_t hash_b = hash_table_hash(s, PRIME_2, hash_table_size);
+static uint64_t hash_table_dh_get_hash(uint64_t * s, const int hash_table_size, const int attempt_number) {
+    const uint64_t hash_a = hash_table_hash(*s, PRIME_1);
+    const uint64_t hash_b = hash_table_hash(*s, PRIME_2);
 
     // mitigate risk of hashing to same bucket by adding 1 to hash_b
     return (hash_a + (attempt_number * (hash_b + 1))) % hash_table_size;
@@ -120,7 +127,7 @@ void hash_table_insert(hash_table_table * hash_table, uint64_t key, uint64_t val
         // while we're not at an empty or deleted index keep generating a new index
         while ((item_at_index != NULL) && (item_at_index != &HASH_TABLE_DELETED_ITEM)) {
             // check if current item's key is equal to our key
-            if (strcmp(item_at_index->key, key) == 0) {
+            if (*item_at_index->key == key) {
                 // delete the item with our key
                 hash_table_delete_item(item_at_index);
                 // place our updated value for this key at the same index
@@ -142,28 +149,28 @@ void hash_table_insert(hash_table_table * hash_table, uint64_t key, uint64_t val
 }
 
 // define table search function
-uint64_t hash_table_search(hash_table_table * hash_table, uint64_t key) {
+uint64_t* hash_table_search(hash_table_table * hash_table, uint64_t key) {
     // get the index for the key
-    uint64_t index = hash_table_dh_get_hash(key, hash_table->size, 0);
+    uint64_t index = hash_table_dh_get_hash(&key, hash_table->size, 0);
     // determine if there is an item already at this index
     hash_table_item * item_at_index = hash_table->items[index];
     int i = 1;
     // while we're not at an empty index, compare the key to the items key, then linearly search
     while (item_at_index != NULL) {
         // check the key of the item against the key searching for and we're not at a deleted item
-        if ((item_at_index != &HASH_TABLE_DELETED_ITEM) && (strcmp(item_at_index->key, key) == 0)) {
+        if ((item_at_index != &HASH_TABLE_DELETED_ITEM) && (*item_at_index->key == key)) {
             // found an item with a matching key - get the value
             return item_at_index->value;
         }
         // get next index using current attempt count
-        index = hash_table_dh_get_hash(key, hash_table->size, i);
+        index = hash_table_dh_get_hash(&key, hash_table->size, i);
         // get the item at this index if exists
         item_at_index = hash_table->items[index];
         // increment the attempt number
         i++;
     }
     // key not present in the hash table
-    return NIL;
+    return NULL;
 }
 
 // define table deletion function for given key
@@ -175,7 +182,7 @@ void hash_table_delete_key(hash_table_table * hash_table, uint64_t key) {
     }
 
     // get the index for the key
-    int index = hash_table_dh_get_hash(key, hash_table->size, 0);
+    int index = hash_table_dh_get_hash(&key, hash_table->size, 0);
     // determine if there is an item already at this index
     hash_table_item * item_at_index = hash_table->items[index];
     int i = 1;
@@ -184,7 +191,7 @@ void hash_table_delete_key(hash_table_table * hash_table, uint64_t key) {
         // ensure we're not at a deleted item
         if (item_at_index != &HASH_TABLE_DELETED_ITEM) {
             // check the key of the item against the key searching for
-            if (strcmp(item_at_index->key, key) == 0) {
+            if (*item_at_index->key == key) {
                 // delete the item
                 hash_table_delete_item(item_at_index);
                 // change item index to point to the deleted item
@@ -193,7 +200,7 @@ void hash_table_delete_key(hash_table_table * hash_table, uint64_t key) {
             }
         }
         // get next index using current attempt count
-        index = hash_table_dh_get_hash(key, hash_table->size, i);
+        index = hash_table_dh_get_hash(&key, hash_table->size, i);
         // get the item at this index if exists
         item_at_index = hash_table->items[index];
         // increment the attempt number
@@ -238,7 +245,7 @@ static void hash_table_resize(hash_table_table * hash_table, const int base_size
     for (int index = 0; index < hash_table->size; index++) {
         hash_table_item * current_item = hash_table->items[index];
         if ((current_item != NULL) && (current_item != &HASH_TABLE_DELETED_ITEM)) {
-            hash_table_insert(new_hash_table, current_item->key, current_item->value);
+            hash_table_insert(new_hash_table, *current_item->key, *current_item->value);
         }
     }
 
